@@ -1,0 +1,2741 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pengumuman Guru Bertugas - SMK Chinta Mata</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#1d4ed8',
+                            600: '#1e40af',
+                            700: '#1d3557',
+                            800: '#1e293b',
+                        },
+                        gold: {
+                            500: '#d97706',
+                            600: '#b45309',
+                            700: '#92400e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* High contrast crisp styling rules */
+        h1, h2, h3, h4, h5, h6 {
+            color: #0f172a;
+            font-weight: 700;
+        }
+        input, select, textarea {
+            font-weight: 500;
+        }
+        .text-crisp {
+            color: #1e293b;
+            font-weight: 500;
+        }
+        /* Custom print styling */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-area, #printable-area * {
+                visibility: visible;
+            }
+            #printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        
+        // Initial Teacher Directory Data from DELIMa Email List (44 Teachers)
+        const INITIAL_TEACHERS = [
+            { id: "T1", name: "AKHYARI BIN KHALID", official_email: "g-57271773@moe-dl.edu.my", teacher_code: "AKK", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T2", name: "AMIRA AIN BINTI AG DAMIT", official_email: "g-10271774@moe-dl.edu.my", teacher_code: "AAA", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T3", name: "AMIR AFIQ BIN MUHAMAD IQBAL FIRDAUSI", official_email: "g-35526808@moe-dl.edu.my", teacher_code: "AAF", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T4", name: "AMIRAH BINTI ABDUL GANI", official_email: "g-88575380@moe-dl.edu.my", teacher_code: "AAG", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T5", name: "ARTIKAH BINTI ANI", official_email: "g-12256756@moe-dl.edu.my", teacher_code: "ARA", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T6", name: "ASMAH BINTI WAHAP", official_email: "g-20271775@moe-dl.edu.my", teacher_code: "ABW", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T7", name: "ASRIANTI BINTI M SANI", official_email: "g-74518805@moe-dl.edu.my", teacher_code: "AMS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T8", name: "CHARLES MAHAT", official_email: "g-59266746@moe-dl.edu.my", teacher_code: "CHM", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T9", name: "CHONG YEN SAIM", official_email: "g-02271777@moe-dl.edu.my", teacher_code: "CYS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T10", name: "DAYANG MAHANI BINTI JUWAISIN", official_email: "g-12521190@moe-dl.edu.my", teacher_code: "DMJ", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T11", name: "FADZILAH BT RAMLI", official_email: "g-88272044@moe-dl.edu.my", teacher_code: "FBR", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T12", name: "FATHIN SYAZWANI BINTI SYAMSUL", official_email: "fathinsyazwani.syamsul@moe-dl.edu.my", teacher_code: "FSS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T13", name: "FIDELIA VINCENT", official_email: "g-74271780@moe-dl.edu.my", teacher_code: "FDV", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T14", name: "FREDLEY BIN JAUN", official_email: "g-83271781@moe-dl.edu.my", teacher_code: "FRJ", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T15", name: "IZZAH AZIEMAH BINTI ZULKIFLI", official_email: "g-72271783@moe-dl.edu.my", teacher_code: "IAZ", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T16", name: "JAKARIA BIN ANEH", official_email: "g-81271784@moe-dl.edu.my", teacher_code: "JBA", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T17", name: "JASNI BIN MOHD SULAIMAN", official_email: "g-01271988@moe-dl.edu.my", teacher_code: "JMS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T18", name: "JESEN ANTHONY MASUIL", official_email: "g-55272096@moe-dl.edu.my", teacher_code: "JAM", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T19", name: "JOCELYN BINTI JUANIS", official_email: "g-76504776@moe-dl.edu.my", teacher_code: "JBJ", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T20", name: "JOHN BIN FRANCIS", official_email: "g-11247865@moe-dl.edu.my", teacher_code: "JOF", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T21", name: "JUNAINNAH @ JUNE BT ROSDY", official_email: "g-12271787@moe-dl.edu.my", teacher_code: "JJR", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T22", name: "KATRINE MALIM", official_email: "g-58257584@moe-dl.edu.my", teacher_code: "KAT", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T23", name: "MOHD FAUZUL BIN ABDUL RASHID", official_email: "g-85271790@moe-dl.edu.my", teacher_code: "MFR", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T24", name: "MOHD ZULFAKAR BIN ZULKIFLE", official_email: "g-91271792@moe-dl.edu.my", teacher_code: "MZZ", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T25", name: "MULINA BINTI ALUS", official_email: "g-40271795@moe-dl.edu.my", teacher_code: "MBA", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T26", name: "NANCY BINTI MADAN", official_email: "g-54272058@moe-dl.edu.my", teacher_code: "NBM", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T27", name: "NETLY RACHEL ISIP", official_email: "g-88552636@moe-dl.edu.my", teacher_code: "NRI", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T28", name: "NORHAYATI BINTI LASINIUS", official_email: "g-62271798@moe-dl.edu.my", teacher_code: "NBL", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T29", name: "NUR FATIN AKMA BINTI MATSIN", official_email: "g-20555886@moe-dl.edu.my", teacher_code: "NFA", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T30", name: "NURSOFIANI BINTI MOHAMAD AMIN", official_email: "g-72524078@moe-dl.edu.my", teacher_code: "NMA", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T31", name: "NURUL ASYIKIN BINTI MATJIN", official_email: "g-82271801@moe-dl.edu.my", teacher_code: "NAM", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T32", name: "RABIATUL ADAWIYAH BINTI SABRI", official_email: "g-54524130@moe-dl.edu.my", teacher_code: "RAS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T33", name: "RACHEL DEBEKA C. MADIS", official_email: "g-84424658@moe-dl.edu.my", teacher_code: "RAC", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T34", name: "RANDY BIN SAIMON", official_email: "g-65248981@moe-dl.edu.my", teacher_code: "RBS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T35", name: "ROSLIJA @ ROSLIZAH BINTI MAIRI", official_email: "g-48424409@moe-dl.edu.my", teacher_code: "RBM", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T36", name: "ROSTINAH @ SITI HAJAR BINTI SINGKUN", official_email: "g-78271804@moe-dl.edu.my", teacher_code: "RSH", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T37", name: "SAILYRIENA LAMIRI", official_email: "g-18580028@moe-dl.edu.my", teacher_code: "SAI", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T38", name: "SALFURA BINTI MAJID", official_email: "g-80271805@moe-dl.edu.my", teacher_code: "SAM", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T39", name: "SHASHEILA SHERIL BINTI SARIKOL", official_email: "g-84271806@moe-dl.edu.my", teacher_code: "SSS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T40", name: "SHAWN CHRISTIEN FABIAN", official_email: "g-11580178@moe-dl.edu.my", teacher_code: "SCF", role: "SUPER ADMIN", status: "Aktif", notification_status: "Aktif" },
+            { id: "T41", name: "SITI NORAIN BINTI YUKILIN", official_email: "g-36426501@moe-dl.edu.my", teacher_code: "SNY", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T42", name: "SUZINAH BINTI SUDIN", official_email: "g-08271961@moe-dl.edu.my", teacher_code: "SUS", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T43", name: "TAN JU YEE", official_email: "g-22272071@moe-dl.edu.my", teacher_code: "TJY", role: "GURU", status: "Aktif", notification_status: "Aktif" },
+            { id: "T44", name: "ZAINUDIN BIN JALANI", official_email: "g-63570101@moe-dl.edu.my", teacher_code: "ZBJ", role: "GURU", status: "Aktif", notification_status: "Aktif" }
+        ];
+
+        // Seed Duty Schedule Weeks 38 to 47
+        const INITIAL_DUTY_SCHEDULE = [
+            { id: "DS38", week_number: 38, code: "SAM / SCF", start_date: "2026-09-21", end_date: "2026-09-27", teacher_1_name: "SALFURA BINTI MAJID", teacher_2_name: "SHAWN CHRISTIEN FABIAN" },
+            { id: "DS39", week_number: 39, code: "SSS / AKK", start_date: "2026-09-28", end_date: "2026-10-04", teacher_1_name: "SHASHEILA SHERIL BINTI SARIKOL", teacher_2_name: "AKHYARI BIN KHALID" },
+            { id: "DS40", week_number: 40, code: "AAF / FSS", start_date: "2026-10-05", end_date: "2026-10-11", teacher_1_name: "AMIR AFIQ BIN MUHAMAD IQBAL FIRDAUSI", teacher_2_name: "FATHIN SYAZWANI BINTI SYAMSUL" },
+            { id: "DS41", week_number: 41, code: "AAG / ARA", start_date: "2026-10-12", end_date: "2026-10-18", teacher_1_name: "AMIRAH BINTI ABDUL GANI", teacher_2_name: "ARTIKAH BINTI ANI" },
+            { id: "DS42", week_number: 42, code: "AMS / CHM", start_date: "2026-10-19", end_date: "2026-10-25", teacher_1_name: "ASRIANTI BINTI M SANI", teacher_2_name: "CHARLES MAHAT" },
+            { id: "DS43", week_number: 43, code: "FRJ / KAT", start_date: "2026-10-26", end_date: "2026-11-01", teacher_1_name: "FREDLEY BIN JAUN", teacher_2_name: "KATRINE MALIM" },
+            { id: "DS44", week_number: 44, code: "MFR / SAI", start_date: "2026-11-02", end_date: "2026-11-08", teacher_1_name: "MOHD FAUZUL BIN ABDUL RASHID", teacher_2_name: "SAILYRIENA LAMIRI" },
+            { id: "DS45", week_number: 45, code: "RAS / SUS", start_date: "2026-11-09", end_date: "2026-11-15", teacher_1_name: "RANDY BIN SAIMON", teacher_2_name: "SUZINAH BINTI SUDIN" },
+            { id: "DS46", week_number: 46, code: "SCF / RAC", start_date: "2026-11-16", end_date: "2026-11-22", teacher_1_name: "SHAWN CHRISTIEN FABIAN", teacher_2_name: "RACHEL DEBEKA C. MADIS" },
+            { id: "DS47", week_number: 47, code: "JOF / NFA", start_date: "2026-11-23", end_date: "2026-11-29", teacher_1_name: "JOHN BIN FRANCIS", teacher_2_name: "NUR FATIN AKMA BINTI MATSIN" }
+        ];
+
+        // Seed Sample Announcements
+        const INITIAL_ANNOUNCEMENTS = [
+            {
+                id: "ANN-1001",
+                title: "Perhimpunan Rasmi Mingguan Sekolah",
+                category: "Perhimpunan",
+                date: "2026-09-29",
+                start_time: "07:20",
+                end_time: "08:10",
+                venue: "Dewan Chinta Mata",
+                assembly_point: "Tapak Perhimpunan",
+                organizer: "Unit Hal Ehwal Murid",
+                important_info: "Semua guru dan murid wajib berpakaian kemas. Guru bertugas diminta mengawal disiplin murid.",
+                instructions: "Murid dikehendaki berbaris mengikut kelas masing-masing tepat jam 7.15 pagi.",
+                priority: "SANGAT PENTING",
+                has_students: true,
+                students: [
+                    { name: "Ahmad Danish Bin Razak", form: "5", className: "5 STEM 1", role: "Pengerusi Majlis", time: "07:00", venue: "Dewan Chinta Mata", escort: "Salfura Binti Majid", notes: "Latihan skrip ringkas" },
+                    { name: "Nurul Huda Binti Zulkifli", form: "5", className: "5 STEM 1", role: "Pembaca Doa", time: "07:00", venue: "Dewan Chinta Mata", escort: "Shawn Christien Fabian", notes: "Menyediakan teks doa" }
+                ],
+                file_info: { name: "Tentatif_Perhimpunan_Minggu39.pdf", size: "1.2 MB", type: "PDF", uploaded_at: "2026-09-28 08:30" },
+                duty_week: 39,
+                teacher_1: "SHASHEILA SHERIL BINTI SARIKOL",
+                teacher_2: "AKHYARI BIN KHALID",
+                teacher_1_email: "g-84271806@moe-dl.edu.my",
+                teacher_2_email: "g-57271773@moe-dl.edu.my",
+                creator_name: "SHAWN CHRISTIEN FABIAN",
+                creator_email: "g-11580178@moe-dl.edu.my",
+                created_at: "2026-09-28 08:30:12",
+                reminder_set: true,
+                reminder_timing: "1 hari sebelum",
+                reminder_status: "BERJAYA"
+            },
+            {
+                id: "ANN-1002",
+                title: "Taklimat Pendaftaran SPM 2026",
+                category: "Peperiksaan",
+                date: "2026-09-30",
+                start_time: "10:30",
+                end_time: "12:00",
+                venue: "Bilik Tayang Perpustakaan",
+                assembly_point: "Dewan Sekolah",
+                organizer: "Unit Penilaian & Peperiksaan",
+                important_info: "Semua Guru Tingkatan 5 dikehendaki membawa boring semakan kad pengenalan murid.",
+                instructions: "Sila patuhi masa yang ditetapkan.",
+                priority: "PENTING",
+                has_students: false,
+                students: [],
+                file_info: null,
+                duty_week: 39,
+                teacher_1: "SHASHEILA SHERIL BINTI SARIKOL",
+                teacher_2: "AKHYARI BIN KHALID",
+                teacher_1_email: "g-84271806@moe-dl.edu.my",
+                teacher_2_email: "g-57271773@moe-dl.edu.my",
+                creator_name: "AMIR AFIQ BIN MUHAMAD IQBAL FIRDAUSI",
+                creator_email: "g-35526808@moe-dl.edu.my",
+                created_at: "2026-09-28 11:20:00",
+                reminder_set: true,
+                reminder_timing: "Hari aktiviti",
+                reminder_status: "DIJADUALKAN"
+            },
+            {
+                id: "ANN-1003",
+                title: "Kejohanan Olahraga Tahunan Sekolah",
+                category: "Kokurikulum",
+                date: "2026-10-08",
+                start_time: "08:00",
+                end_time: "13:00",
+                venue: "Padang Utama SMK Chinta Mata",
+                assembly_point: "Khemah Rumah Sukan",
+                organizer: "Unit Sukan & Permainan",
+                important_info: "Murid digalakkan membawa air minuman secukupnya dan memakai pakaian sukan mengikut rumah.",
+                instructions: "Semua pengadil kejohanan dikehendaki melaporkan diri di meja urusetia jam 7.30 pagi.",
+                priority: "BIASA",
+                has_students: true,
+                students: [
+                    { name: "Muhammad Arif Bin Ismail", form: "4", className: "4 PERMATA", role: "Atlet Acara 100m", time: "07:30", venue: "Padang Sukan", escort: "Amir Afiq Bin Muhamad Iqbal Firdausi", notes: "Pemeriksaan kesihatan ringkas" }
+                ],
+                file_info: { name: "Buku_Program_Sukan_2026.docx", size: "3.4 MB", type: "DOCX", uploaded_at: "2026-09-29 09:15" },
+                duty_week: 40,
+                teacher_1: "AMIR AFIQ BIN MUHAMAD IQBAL FIRDAUSI",
+                teacher_2: "FATHIN SYAZWANI BINTI SYAMSUL",
+                teacher_1_email: "g-35526808@moe-dl.edu.my",
+                teacher_2_email: "fathinsyazwani.syamsul@moe-dl.edu.my",
+                creator_name: "SHAWN CHRISTIEN FABIAN",
+                creator_email: "g-11580178@moe-dl.edu.my",
+                created_at: "2026-09-29 09:15:40",
+                reminder_set: false,
+                reminder_timing: "",
+                reminder_status: "MENUNGGU"
+            }
+        ];
+
+        // Seed Audit Logs
+        const INITIAL_AUDIT_LOGS = [
+            { id: "LOG-1", user: "SHAWN CHRISTIEN FABIAN", role: "SUPER ADMIN", action: "Menambah pengumuman baharu: Perhimpunan Rasmi Mingguan", date: "2026-09-28", time: "08:30 AM" },
+            { id: "LOG-2", user: "SHAWN CHRISTIEN FABIAN", role: "SUPER ADMIN", action: "Mengemas kini jadual guru bertugas Minggu 38 - Minggu 47", date: "2026-09-28", time: "09:00 AM" },
+            { id: "LOG-3", user: "AMIR AFIQ BIN MUHAMAD IQBAL FIRDAUSI", role: "GURU", action: "Menambah pengumuman baharu: Taklimat Pendaftaran SPM 2026", date: "2026-09-28", time: "11:20 AM" },
+            { id: "LOG-4", user: "SHAWN CHRISTIEN FABIAN", role: "SUPER ADMIN", action: "Penjadualan peringatan automatik untuk Perhimpunan Mingguan", date: "2026-09-28", time: "02:15 PM" }
+        ];
+
+        
+        function App() {
+            // App state stored locally
+            const [currentUser, setCurrentUser] = React.useState({
+                name: "SHAWN CHRISTIEN FABIAN",
+                email: "g-11580178@moe-dl.edu.my",
+                role: "SUPER ADMIN"
+            });
+            const [isAuthenticated, setIsAuthenticated] = React.useState(true);
+
+            // Core entities state
+            const [teachers, setTeachers] = React.useState(() => {
+                const saved = localStorage.getItem('smk_teachers');
+                return saved ? JSON.parse(saved) : INITIAL_TEACHERS;
+            });
+
+            const [dutySchedule, setDutySchedule] = React.useState(() => {
+                const saved = localStorage.getItem('smk_duty_schedule');
+                return saved ? JSON.parse(saved) : INITIAL_DUTY_SCHEDULE;
+            });
+
+            const [announcements, setAnnouncements] = React.useState(() => {
+                const saved = localStorage.getItem('smk_announcements');
+                return saved ? JSON.parse(saved) : INITIAL_ANNOUNCEMENTS;
+            });
+
+            const [auditLogs, setAuditLogs] = React.useState(() => {
+                const saved = localStorage.getItem('smk_audit_logs');
+                return saved ? JSON.parse(saved) : INITIAL_AUDIT_LOGS;
+            });
+
+            // UI State
+            const [activeMenu, setActiveMenu] = React.useState("dashboard");
+            const [toastMessage, setToastMessage] = React.useState(null);
+            const [selectedAnnouncement, setSelectedAnnouncement] = React.useState(null);
+            const [activeModal, setActiveModal] = React.useState(null); // 'view', 'script', 'whatsapp', 'reminder'
+            const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
+            // Persist to localStorage
+            React.useEffect(() => {
+                localStorage.setItem('smk_teachers', JSON.stringify(teachers));
+            }, [teachers]);
+
+            React.useEffect(() => {
+                localStorage.setItem('smk_duty_schedule', JSON.stringify(dutySchedule));
+            }, [dutySchedule]);
+
+            React.useEffect(() => {
+                localStorage.setItem('smk_announcements', JSON.stringify(announcements));
+            }, [announcements]);
+
+            React.useEffect(() => {
+                localStorage.setItem('smk_audit_logs', JSON.stringify(auditLogs));
+            }, [auditLogs]);
+
+            // Toast Trigger Helper
+            const showToast = (msg, type = "success") => {
+                setToastMessage({ text: msg, type });
+                setTimeout(() => setToastMessage(null), 3500);
+            };
+
+            // Log Action Helper
+            const addAuditLog = (actionText) => {
+                const newLog = {
+                    id: `LOG-${Date.now()}`,
+                    user: currentUser.name,
+                    role: currentUser.role,
+                    action: actionText,
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+                setAuditLogs(prev => [newLog, ...prev]);
+            };
+
+            // Automatic Duty Lookup logic: start_date <= activity_date <= end_date
+            const findDutyTeachersByDate = (activityDate) => {
+                if (!activityDate) return null;
+                const match = dutySchedule.find(ds => {
+                    return activityDate >= ds.start_date && activityDate <= ds.end_date;
+                });
+
+                if (!match) return null;
+
+                // Find corresponding teacher records in directory for official emails
+                const t1 = teachers.find(t => t.name.toUpperCase() === match.teacher_1_name.toUpperCase());
+                const t2 = teachers.find(t => t.name.toUpperCase() === match.teacher_2_name.toUpperCase());
+
+                return {
+                    week_number: match.week_number,
+                    code: match.code,
+                    start_date: match.start_date,
+                    end_date: match.end_date,
+                    teacher_1: match.teacher_1_name,
+                    teacher_2: match.teacher_2_name,
+                    teacher_1_email: t1 ? t1.official_email : 'Tiada E-mel',
+                    teacher_2_email: t2 ? t2.official_email : 'Tiada E-mel'
+                };
+            };
+
+            // Login Handler
+            const handleLogin = (email, role) => {
+                const found = teachers.find(t => t.official_email.toLowerCase() === email.toLowerCase());
+                if (found) {
+                    setCurrentUser({
+                        name: found.name,
+                        email: found.official_email,
+                        role: found.role
+                    });
+                } else if (email === "g-11580178@moe-dl.edu.my") {
+                    setCurrentUser({
+                        name: "SHAWN CHRISTIEN FABIAN",
+                        email: "g-11580178@moe-dl.edu.my",
+                        role: "SUPER ADMIN"
+                    });
+                } else {
+                    // Fallback demo user login
+                    setCurrentUser({
+                        name: email.split('@')[0].toUpperCase().replace(/[^A-Z]/g, ' '),
+                        email: email,
+                        role: role || "GURU"
+                    });
+                }
+                setIsAuthenticated(true);
+                addAuditLog("Pengguna log masuk ke dalam sistem");
+                showToast("Selamat datang ke Sistem Pengumuman Guru Bertugas!");
+            };
+
+            const handleLogout = () => {
+                setIsAuthenticated(false);
+                showToast("Anda telah berjaya log keluar.", "info");
+            };
+
+            if (!isAuthenticated) {
+                return <LoginPage onLogin={handleLogin} teachers={teachers} />;
+            }
+
+            return (
+                <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+                    {/* Header */}
+                    {}
+                    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                                <button 
+                                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                    className="md:hidden p-2 text-slate-600 hover:text-slate-900 focus:outline-none"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                                </button>
+                                <div>
+                                    <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight text-brand-700 leading-tight">
+                                        SISTEM PENGUMUMAN GURU BERTUGAS
+                                    </h1>
+                                    <p className="text-xs sm:text-sm font-semibold text-slate-500">
+                                        SMK CHINTA MATA &bull; <span className="text-gold-600 font-medium">"Maklumat Tepat Pengumuman Teratur Tiada Yang Tercicir"</span>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="hidden sm:flex items-center space-x-4">
+                                <div className="text-right border-r border-slate-200 pr-4">
+                                    <div className="text-sm font-bold text-slate-900">{currentUser.name}</div>
+                                    <div className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700 inline-block mt-0.5">
+                                        {currentUser.role}
+                                    </div>
+                                </div>
+                                <div className="flex space-x-2">
+                                    <button 
+                                        onClick={() => setActiveMenu("profil")} 
+                                        className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-semibold flex items-center space-x-1 border border-slate-200"
+                                        title="Profil Saya"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                        <span className="hidden lg:inline">Profil</span>
+                                    </button>
+                                    {currentUser.role === "SUPER ADMIN" && (
+                                        <button 
+                                            onClick={() => setActiveMenu("tetapan")} 
+                                            className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-semibold flex items-center space-x-1 border border-slate-200"
+                                            title="Tetapan Sistem"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                                            <span className="hidden lg:inline">Tetapan</span>
+                                        </button>
+                                    )}
+                                    <button 
+                                        onClick={handleLogout} 
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-semibold flex items-center space-x-1 border border-red-200"
+                                        title="Log Keluar"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                        <span className="hidden lg:inline">Log Keluar</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Layout Body */}
+                    <div className="flex-1 flex max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 gap-6">
+                        {/* Sidebar Navigation */}
+                        {}
+                        <aside className={`
+                            fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 p-4 transform transition-transform duration-200 ease-in-out md:static md:translate-x-0 md:border-r-0 md:bg-transparent md:p-0 md:w-60 shrink-0
+                            ${mobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
+                        `}>
+                            <div className="md:hidden flex justify-between items-center mb-6 pb-2 border-b border-slate-200">
+                                <span className="font-bold text-slate-800">Menu Navigasi</span>
+                                <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-slate-500">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+
+                            <nav className="space-y-1">
+                                <SidebarItem id="dashboard" label="Dashboard" active={activeMenu} setActive={setActiveMenu} icon="grid" />
+                                <SidebarItem id="tambah_pengumuman" label="+ Tambah Pengumuman" active={activeMenu} setActive={setActiveMenu} icon="plus-circle" isHighlight />
+                                <SidebarItem id="senarai_pengumuman" label={currentUser.role === "SUPER ADMIN" ? "Semua Pengumuman" : "Senarai Pengumuman"} active={activeMenu} setActive={setActiveMenu} icon="list" />
+                                <SidebarItem id="kalendar" label="Kalendar Aktiviti" active={activeMenu} setActive={setActiveMenu} icon="calendar" />
+                                <SidebarItem id="guru_bertugas" label="Guru Bertugas" active={activeMenu} setActive={setActiveMenu} icon="users" />
+                                <SidebarItem id="direktori_guru" label="Direktori Guru" active={activeMenu} setActive={setActiveMenu} icon="book-open" />
+                                <SidebarItem id="murid" label="Pengurusan Murid" active={activeMenu} setActive={setActiveMenu} icon="user-check" />
+                                <SidebarItem id="peringatan" label="Pengurusan Reminder" active={activeMenu} setActive={setActiveMenu} icon="bell" />
+                                <SidebarItem id="skrip_pengumuman" label="Skrip Pengumuman" active={activeMenu} setActive={setActiveMenu} icon="file-text" />
+                                <SidebarItem id="whatsapp" label="Penjana WhatsApp" active={activeMenu} setActive={setActiveMenu} icon="message-square" />
+                                <SidebarItem id="sejarah" label="Sejarah & Rekod" active={activeMenu} setActive={setActiveMenu} icon="clock" />
+
+                                {currentUser.role === "SUPER ADMIN" && (
+                                    <>
+                                        <div className="pt-4 pb-1">
+                                            <span className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400">Panel Admin Utama</span>
+                                        </div>
+                                        <SidebarItem id="statistik" label="Statistik & Analisis" active={activeMenu} setActive={setActiveMenu} icon="bar-chart-2" />
+                                        <SidebarItem id="pengurusan_pengguna" label="Kawalan Pengguna" active={activeMenu} setActive={setActiveMenu} icon="shield" />
+                                        <SidebarItem id="audit_log" label="Audit Log" active={activeMenu} setActive={setActiveMenu} icon="activity" />
+                                        <SidebarItem id="tetapan" label="Tetapan Sistem" active={activeMenu} setActive={setActiveMenu} icon="settings" />
+                                    </>
+                                )}
+
+                                <div className="pt-4 border-t border-slate-200 mt-4 md:hidden">
+                                    <button 
+                                        onClick={handleLogout}
+                                        className="w-full text-left px-3 py-2 text-sm font-semibold text-red-600 rounded-lg hover:bg-red-50"
+                                    >
+                                        Log Keluar
+                                    </button>
+                                </div>
+                            </nav>
+                        </aside>
+
+                        {/* Main Content Content Area */}
+                        {}
+                        <main className="flex-1 min-w-0">
+                            {/* Toast Notification Banner */}
+                            {toastMessage && (
+                                <div className={`mb-4 p-4 rounded-xl shadow-sm border flex items-center justify-between ${
+                                    toastMessage.type === "error" ? "bg-red-50 border-red-200 text-red-800" :
+                                    toastMessage.type === "warning" ? "bg-amber-50 border-amber-200 text-amber-800" :
+                                    "bg-emerald-50 border-emerald-200 text-emerald-800"
+                                }`}>
+                                    <div className="flex items-center space-x-2">
+                                        <span className="font-bold">
+                                            {toastMessage.type === "error" ? "⚠️ Ralat:" : toastMessage.type === "warning" ? "🔔 Peringatan:" : "✅ Berjaya:"}
+                                        </span>
+                                        <span className="font-medium text-sm">{toastMessage.text}</span>
+                                    </div>
+                                    <button onClick={() => setToastMessage(null)} className="text-sm font-bold opacity-75 hover:opacity-100">&times;</button>
+                                </div>
+                            )}
+
+                            {activeMenu === "dashboard" && (
+                                <DashboardView 
+                                    currentUser={currentUser}
+                                    announcements={announcements}
+                                    dutySchedule={dutySchedule}
+                                    findDutyTeachersByDate={findDutyTeachersByDate}
+                                    setActiveMenu={setActiveMenu}
+                                    setSelectedAnnouncement={setSelectedAnnouncement}
+                                    setActiveModal={setActiveModal}
+                                />
+                            )}
+
+                            {activeMenu === "tambah_pengumuman" && (
+                                <AnnouncementFormView 
+                                    currentUser={currentUser}
+                                    teachers={teachers}
+                                    findDutyTeachersByDate={findDutyTeachersByDate}
+                                    onSave={(newAnn) => {
+                                        setAnnouncements([newAnn, ...announcements]);
+                                        addAuditLog(`Menambah pengumuman baharu: ${newAnn.title}`);
+                                        showToast("Pengumuman berjaya disimpan dan disusun!");
+                                        setActiveMenu("senarai_pengumuman");
+                                    }}
+                                    onCancel={() => setActiveMenu("senarai_pengumuman")}
+                                />
+                            )}
+
+                            {activeMenu === "senarai_pengumuman" && (
+                                <AnnouncementListView 
+                                    announcements={announcements}
+                                    currentUser={currentUser}
+                                    setSelectedAnnouncement={setSelectedAnnouncement}
+                                    setActiveModal={setActiveModal}
+                                    setActiveMenu={setActiveMenu}
+                                    onDelete={(id) => {
+                                        setAnnouncements(announcements.filter(a => a.id !== id));
+                                        addAuditLog(`Memadam pengumuman ID: ${id}`);
+                                        showToast("Pengumuman telah dipadam.", "warning");
+                                    }}
+                                />
+                            )}
+
+                            {activeMenu === "kalendar" && (
+                                <CalendarView 
+                                    announcements={announcements}
+                                    setSelectedAnnouncement={setSelectedAnnouncement}
+                                    setActiveModal={setActiveModal}
+                                />
+                            )}
+
+                            {activeMenu === "guru_bertugas" && (
+                                <DutyScheduleView 
+                                    dutySchedule={dutySchedule}
+                                    teachers={teachers}
+                                    currentUser={currentUser}
+                                    onUpdateSchedule={(updated) => {
+                                        setDutySchedule(updated);
+                                        addAuditLog("Mengemas kini jadual guru bertugas minggu");
+                                        showToast("Jadual guru bertugas berjaya dikemas kini!");
+                                    }}
+                                />
+                            )}
+
+                            {activeMenu === "direktori_guru" && (
+                                <TeacherDirectoryView 
+                                    teachers={teachers}
+                                    currentUser={currentUser}
+                                    onUpdateTeachers={(updated) => {
+                                        setTeachers(updated);
+                                        addAuditLog("Mengemaskini direktori guru sekolah");
+                                        showToast("Direktori guru dikemas kini.");
+                                    }}
+                                />
+                            )}
+
+                            {activeMenu === "murid" && (
+                                <StudentsView announcements={announcements} />
+                            )}
+
+                            {activeMenu === "peringatan" && (
+                                <RemindersView 
+                                    announcements={announcements}
+                                    onUpdateAnnouncement={(updatedAnn) => {
+                                        setAnnouncements(announcements.map(a => a.id === updatedAnn.id ? updatedAnn : a));
+                                        addAuditLog(`Mengurus peringatan bagi: ${updatedAnn.title}`);
+                                        showToast("Tetapan reminder telah dijadualkan!");
+                                    }}
+                                />
+                            )}
+
+                            {activeMenu === "skrip_pengumuman" && (
+                                <ScriptGeneratorView 
+                                    announcements={announcements}
+                                    showToast={showToast}
+                                />
+                            )}
+
+                            {activeMenu === "whatsapp" && (
+                                <WhatsAppGeneratorView 
+                                    announcements={announcements}
+                                    showToast={showToast}
+                                />
+                            )}
+
+                            {activeMenu === "sejarah" && (
+                                <HistoryView 
+                                    announcements={announcements}
+                                    currentUser={currentUser}
+                                    setSelectedAnnouncement={setSelectedAnnouncement}
+                                    setActiveModal={setActiveModal}
+                                />
+                            )}
+
+                            {activeMenu === "statistik" && (
+                                <StatisticsView 
+                                    announcements={announcements}
+                                    teachers={teachers}
+                                    dutySchedule={dutySchedule}
+                                />
+                            )}
+
+                            {activeMenu === "pengurusan_pengguna" && (
+                                <UserManagementView 
+                                    teachers={teachers}
+                                    setTeachers={setTeachers}
+                                    showToast={showToast}
+                                />
+                            )}
+
+                            {activeMenu === "audit_log" && (
+                                <AuditLogView auditLogs={auditLogs} />
+                            )}
+
+                            {activeMenu === "tetapan" && (
+                                <SettingsView currentUser={currentUser} showToast={showToast} />
+                            )}
+
+                            {activeMenu === "profil" && (
+                                <ProfileView currentUser={currentUser} teachers={teachers} />
+                            )}
+                        </main>
+                    </div>
+
+                    {/* Shared Modals */}
+                    {activeModal === "view" && selectedAnnouncement && (
+                        <AnnouncementDetailModal 
+                            announcement={selectedAnnouncement}
+                            onClose={() => setActiveModal(null)}
+                            onOpenScript={() => setActiveModal("script")}
+                            onOpenWhatsApp={() => setActiveModal("whatsapp")}
+                            onOpenReminder={() => setActiveModal("reminder")}
+                        />
+                    )}
+
+                    {activeModal === "script" && selectedAnnouncement && (
+                        <ScriptModal 
+                            announcement={selectedAnnouncement}
+                            onClose={() => setActiveModal(null)}
+                            showToast={showToast}
+                        />
+                    )}
+
+                    {activeModal === "whatsapp" && selectedAnnouncement && (
+                        <WhatsAppModal 
+                            announcement={selectedAnnouncement}
+                            onClose={() => setActiveModal(null)}
+                            showToast={showToast}
+                        />
+                    )}
+
+                    {/* Footer */}
+                    <footer className="bg-white border-t border-slate-200 mt-auto py-6">
+                        <div className="max-w-7xl mx-auto px-4 text-center text-xs font-medium text-slate-500">
+                            Sistem Pengumuman Guru Bertugas SMK Chinta Mata &copy; 2026. Hak Cipta Terpelihara.
+                            <br />
+                            <span className="text-slate-400">Aplikasi Pengurusan Dalaman Sekolah &bull; Versi 2.4 (Pro)</span>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        function SidebarItem({ id, label, active, setActive, icon, isHighlight = false }) {
+            const isActive = active === id;
+            return (
+                <button
+                    onClick={() => setActive(id)}
+                    className={`
+                        w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 text-left
+                        ${isHighlight && !isActive ? "bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200" : ""}
+                        ${isActive ? "bg-brand-600 text-white shadow-md shadow-brand-500/20" : isHighlight ? "" : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"}
+                    `}
+                >
+                    <Icon name={icon} className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : isHighlight ? "text-brand-600" : "text-slate-500"}`} />
+                    <span className="truncate">{label}</span>
+                </button>
+            );
+        }
+
+        function Icon({ name, className }) {
+            // SVG Icon helper mapping
+            switch(name) {
+                case 'grid': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>;
+                case 'plus-circle': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+                case 'list': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>;
+                case 'calendar': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>;
+                case 'users': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>;
+                case 'book-open': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>;
+                case 'user-check': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+                case 'bell': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path></svg>;
+                case 'file-text': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>;
+                case 'message-square': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>;
+                case 'clock': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+                case 'bar-chart-2': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 20V10m-6 10V4M6 20v-6"></path></svg>;
+                case 'shield': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>;
+                case 'activity': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>;
+                case 'settings': return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>;
+                default: return <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>;
+            }
+        }
+
+        function LoginPage({ onLogin, teachers }) {
+            const [email, setEmail] = React.useState("g-11580178@moe-dl.edu.my");
+            const [password, setPassword] = React.useState("password123");
+            const [showPass, setShowPass] = React.useState(false);
+            const [error, setError] = React.useState("");
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!email) {
+                    setError("Sila masukkan e-mel rasmi DELIMa anda.");
+                    return;
+                }
+                if (!email.includes("@")) {
+                    setError("Sila masukkan alamat e-mel yang sah.");
+                    return;
+                }
+                onLogin(email, "GURU");
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+                    <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+                        <div className="inline-flex p-3 rounded-2xl bg-brand-600 text-white shadow-lg mb-4">
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h18"></path></svg>
+                        </div>
+                        <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                            SISTEM PENGUMUMAN GURU BERTUGAS
+                        </h2>
+                        <p className="mt-2 text-sm font-bold text-brand-700 uppercase tracking-wide">
+                            SMK CHINTA MATA
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500 italic">
+                            "Maklumat Tepat Pengumuman Teratur Tiada Yang Tercicir"
+                        </p>
+                    </div>
+
+                    <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+                        <div className="bg-white py-8 px-6 shadow-xl rounded-2xl border border-slate-200 sm:px-10">
+                            {error && (
+                                <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-xs font-bold text-red-700">
+                                    {error}
+                                </div>
+                            )}
+
+                            <form className="space-y-5" onSubmit={handleSubmit}>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                        E-mel Rasmi DELIMa (@moe-dl.edu.my)
+                                    </label>
+                                    <input 
+                                        type="email" 
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="g-12345678@moe-dl.edu.my"
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm font-medium"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                                        Kata Laluan
+                                    </label>
+                                    <div className="relative">
+                                        <input 
+                                            type={showPass ? "text" : "password"} 
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm font-medium pr-10"
+                                            required
+                                        />
+                                        <button 
+                                            type="button" 
+                                            onClick={() => setShowPass(!showPass)}
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-bold text-slate-500 hover:text-slate-700"
+                                        >
+                                            {showPass ? "Sembunyi" : "Papar"}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between text-xs">
+                                    <label className="flex items-center space-x-2 text-slate-600 font-medium">
+                                        <input type="checkbox" className="rounded border-slate-300 text-brand-600 focus:ring-brand-500" defaultChecked />
+                                        <span>Ingat saya</span>
+                                    </label>
+                                    <a href="#" onClick={(e) => { e.preventDefault(); alert("Sila hubungi Admin Utama (Shawn Christien Fabian) untuk menetapkan semula kata laluan anda."); }} className="font-bold text-brand-600 hover:underline">
+                                        Lupa kata laluan?
+                                    </a>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="w-full py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors"
+                                >
+                                    LOG MASUK SISTEM
+                                </button>
+                            </form>
+
+                            <div className="mt-6 border-t border-slate-200 pt-6">
+                                <span className="block text-xs font-bold text-slate-400 uppercase tracking-wider text-center mb-3">
+                                    Pilih Akaun Demo Pantas
+                                </span>
+                                <div className="space-y-2">
+                                    <button 
+                                        onClick={() => onLogin("g-11580178@moe-dl.edu.my", "SUPER ADMIN")}
+                                        className="w-full p-2.5 rounded-lg border border-brand-200 bg-brand-50 hover:bg-brand-100 text-left flex justify-between items-center text-xs"
+                                    >
+                                        <div>
+                                            <div className="font-bold text-brand-900">SHAWN CHRISTIEN FABIAN</div>
+                                            <div className="text-slate-500">Super Admin Utama</div>
+                                        </div>
+                                        <span className="font-bold text-brand-700 bg-white px-2 py-1 rounded border border-brand-200">SUPER ADMIN</span>
+                                    </button>
+
+                                    <button 
+                                        onClick={() => onLogin("g-80271805@moe-dl.edu.my", "GURU")}
+                                        className="w-full p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-left flex justify-between items-center text-xs"
+                                    >
+                                        <div>
+                                            <div className="font-bold text-slate-900">SALFURA BINTI MAJID</div>
+                                            <div className="text-slate-500">Guru Bertugas (Minggu 38)</div>
+                                        </div>
+                                        <span className="font-bold text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">GURU</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function DashboardView({ currentUser, announcements, dutySchedule, findDutyTeachersByDate, setActiveMenu, setSelectedAnnouncement, setActiveModal }) {
+            // Get today date string YYYY-MM-DD (simulated for system date 2026-09-29)
+            const todayStr = "2026-09-29";
+            const todayDuty = findDutyTeachersByDate(todayStr);
+
+            const todayAnnouncements = announcements.filter(a => a.date === todayStr);
+            const upcomingAnnouncements = announcements.filter(a => a.date > todayStr).sort((a,b) => a.date.localeCompare(b.date));
+            const unremindedUpcoming = upcomingAnnouncements.filter(a => !a.reminder_set);
+
+            return (
+                <div className="space-y-6">
+                    {/* Welcome Banner */}
+                    <div className="bg-gradient-to-r from-brand-700 to-brand-600 rounded-2xl p-6 text-white shadow-md relative overflow-hidden">
+                        <div className="relative z-10">
+                            <h2 className="text-2xl font-extrabold tracking-tight">
+                                Selamat Datang, {currentUser.name}!
+                            </h2>
+                            <p className="text-brand-100 text-sm font-medium mt-1">
+                                Peranan: <span className="font-bold text-white bg-white/20 px-2 py-0.5 rounded">{currentUser.role}</span> &bull; Modul Pengurusan Pengumuman SMK Chinta Mata
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Duty Teacher Card For Today */}
+                    {}
+                    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                            <div className="flex items-center space-x-3">
+                                <div className="p-2.5 rounded-xl bg-amber-50 text-gold-600 border border-amber-200">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">GURU BERTUGAS SEMASA</h3>
+                                    <p className="text-xs font-semibold text-slate-500">Berdasarkan tarikh hari ini: {todayStr}</p>
+                                </div>
+                            </div>
+                            {todayDuty && (
+                                <span className="px-3 py-1 rounded-full bg-brand-100 text-brand-800 text-xs font-bold border border-brand-200">
+                                    MINGGU {todayDuty.week_number} ({todayDuty.code})
+                                </span>
+                            )}
+                        </div>
+
+                        {todayDuty ? (
+                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center space-x-3">
+                                    <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-sm">
+                                        1
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-xs font-bold text-slate-500 uppercase">Guru Bertugas 1</div>
+                                        <div className="font-bold text-slate-900 truncate">{todayDuty.teacher_1}</div>
+                                        <div className="text-xs font-semibold text-brand-700">{todayDuty.teacher_1_email}</div>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center space-x-3">
+                                    <div className="w-10 h-10 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-sm">
+                                        2
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="text-xs font-bold text-slate-500 uppercase">Guru Bertugas 2</div>
+                                        <div className="font-bold text-slate-900 truncate">{todayDuty.teacher_2}</div>
+                                        <div className="text-xs font-semibold text-brand-700">{todayDuty.teacher_2_email}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-center font-bold text-sm">
+                                ⚠️ Guru bertugas belum ditetapkan untuk julat tarikh semasa.
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Alert for activities without reminders */}
+                    {unremindedUpcoming.length > 0 && (
+                        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                            <div className="flex items-center space-x-3">
+                                <span className="text-2xl">🔔</span>
+                                <div>
+                                    <h4 className="font-bold text-amber-900 text-sm">PERINGATAN BELUM DITETAPKAN</h4>
+                                    <p className="text-xs font-semibold text-amber-800">
+                                        Terdapat {unremindedUpcoming.length} aktiviti akan datang yang belum menetapkan sebarang peringatan kepada guru.
+                                    </p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setActiveMenu("peringatan")}
+                                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-sm whitespace-nowrap"
+                            >
+                                TETAPKAN PERINGATAN
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Key Metric Overview Cards */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <MetricCard title="Pengumuman Hari Ini" value={todayAnnouncements.length} color="blue" icon="list" />
+                        <MetricCard title="Aktiviti Akan Datang" value={upcomingAnnouncements.length} color="amber" icon="calendar" />
+                        <MetricCard title="Reminder Aktif" value={announcements.filter(a=>a.reminder_set).length} color="emerald" icon="bell" />
+                        <MetricCard title="Jumlah Pengumuman" value={announcements.length} color="slate" icon="file-text" />
+                    </div>
+
+                    {/* Today's Announcements & Upcoming Sections */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Today's Section */}
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                                <h3 className="font-bold text-slate-900 text-base flex items-center space-x-2">
+                                    <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    <span>PENGUMUMAN HARI INI ({todayStr})</span>
+                                </h3>
+                                <button onClick={() => setActiveMenu("senarai_pengumuman")} className="text-xs font-bold text-brand-600 hover:underline">Lihat Semua</button>
+                            </div>
+
+                            {todayAnnouncements.length === 0 ? (
+                                <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                    <p className="text-sm font-bold text-slate-500">TIADA AKTIVITI HARI INI</p>
+                                    <p className="text-xs font-medium text-slate-400 mt-1">Belum ada pengumuman khas direkodkan untuk hari ini.</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {todayAnnouncements.map(ann => (
+                                        <AnnouncementCard 
+                                            key={ann.id} 
+                                            ann={ann} 
+                                            onView={() => { setSelectedAnnouncement(ann); setActiveModal("view"); }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Upcoming Section */}
+                        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+                            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+                                <h3 className="font-bold text-slate-900 text-base">AKTIVITI AKAN DATANG</h3>
+                                <button onClick={() => setActiveMenu("tambah_pengumuman")} className="text-xs font-bold text-brand-600 hover:underline">+ Tambah Baru</button>
+                            </div>
+
+                            {upcomingAnnouncements.length === 0 ? (
+                                <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                    <p className="text-sm font-bold text-slate-500">TIADA AKTIVITI AKAN DATANG</p>
+                                    <button onClick={() => setActiveMenu("tambah_pengumuman")} className="mt-2 px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold">
+                                        + TAMBAH PENGUMUMAN
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {upcomingAnnouncements.slice(0, 4).map(ann => (
+                                        <AnnouncementCard 
+                                            key={ann.id} 
+                                            ann={ann} 
+                                            onView={() => { setSelectedAnnouncement(ann); setActiveModal("view"); }}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function MetricCard({ title, value, color, icon }) {
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+                        <p className="text-2xl font-extrabold text-slate-900 mt-1">{value}</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-100 text-slate-700">
+                        <Icon name={icon} className="w-6 h-6" />
+                    </div>
+                </div>
+            );
+        }
+
+        function AnnouncementCard({ ann, onView }) {
+            const isVeryImportant = ann.priority === "SANGAT PENTING";
+            return (
+                <div className={`p-4 rounded-xl border transition-all hover:shadow-md bg-white ${
+                    isVeryImportant ? "border-red-300 bg-red-50/20" : "border-slate-200"
+                }`}>
+                    <div className="flex justify-between items-start">
+                        <div className="flex-1 pr-2">
+                            <div className="flex items-center space-x-2">
+                                <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                    {ann.category}
+                                </span>
+                                {isVeryImportant && (
+                                    <span className="px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                                        PERHATIAN KHAS
+                                    </span>
+                                )}
+                            </div>
+                            <h4 className="font-bold text-slate-900 text-sm mt-1.5 line-clamp-1">{ann.title}</h4>
+                            <p className="text-xs font-semibold text-slate-600 mt-1">
+                                📅 {ann.date} &bull; ⏰ {ann.start_time} - {ann.end_time} &bull; 📍 {ann.venue}
+                            </p>
+                        </div>
+                        <button onClick={onView} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg whitespace-nowrap">
+                            Papar
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function AnnouncementFormView({ currentUser, teachers, findDutyTeachersByDate, onSave, onCancel }) {
+            const [formData, setFormData] = React.useState({
+                title: "",
+                category: "Akademik",
+                date: new Date().toISOString().split('T')[0],
+                start_time: "08:00",
+                end_time: "09:00",
+                venue: "",
+                assembly_point: "",
+                organizer: "SMK Chinta Mata",
+                important_info: "",
+                instructions: "",
+                priority: "BIASA",
+                has_students: "TIDAK",
+                students: [],
+                file_info: null,
+                reminder_set: false,
+                reminder_timing: "1 hari sebelum"
+            });
+
+            // Student input fields inside form
+            const [studentInput, setStudentInput] = React.useState({
+                name: "", form: "1", className: "1 PERMATA", role: "", time: "", venue: "", escort: "", notes: ""
+            });
+
+            // File upload mock parser
+            const [uploadedFileName, setUploadedFileName] = React.useState("");
+
+            // Duty Teacher Auto Lookup Result based on formData.date
+            const dutyInfo = findDutyTeachersByDate(formData.date);
+
+            const handleAddStudent = () => {
+                if (!studentInput.name) return;
+                setFormData(prev => ({
+                    ...prev,
+                    students: [...prev.students, { ...studentInput }]
+                }));
+                setStudentInput({ name: "", form: "1", className: "1 PERMATA", role: "", time: "", venue: "", escort: "", notes: "" });
+            };
+
+            const handleRemoveStudent = (index) => {
+                setFormData(prev => ({
+                    ...prev,
+                    students: prev.students.filter((_, i) => i !== index)
+                }));
+            };
+
+            const handleFileSelect = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const ext = file.name.split('.').pop().toUpperCase();
+                    setUploadedFileName(file.name);
+                    setFormData(prev => ({
+                        ...prev,
+                        file_info: {
+                            name: file.name,
+                            size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+                            type: ext,
+                            uploaded_at: new Date().toISOString().replace('T', ' ').substring(0, 16)
+                        }
+                    }));
+                }
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+
+                if (!formData.title || !formData.date || !formData.category) {
+                    alert("Sila lengkapkan maklumat wajib: Tajuk, Tarikh dan Kategori.");
+                    return;
+                }
+
+                if (formData.start_time && formData.end_time && formData.start_time >= formData.end_time) {
+                    alert("Masa tamat tidak boleh lebih awal daripada atau sama dengan masa mula.");
+                    return;
+                }
+
+                const newAnnouncement = {
+                    id: `ANN-${Date.now()}`,
+                    title: formData.title,
+                    category: formData.category,
+                    date: formData.date,
+                    start_time: formData.start_time,
+                    end_time: formData.end_time,
+                    venue: formData.venue || "Kawasan Sekolah",
+                    assembly_point: formData.assembly_point || "-",
+                    organizer: formData.organizer,
+                    important_info: formData.important_info,
+                    instructions: formData.instructions,
+                    priority: formData.priority,
+                    has_students: formData.has_students === "YA",
+                    students: formData.has_students === "YA" ? formData.students : [],
+                    file_info: formData.file_info,
+                    duty_week: dutyInfo ? dutyInfo.week_number : null,
+                    teacher_1: dutyInfo ? dutyInfo.teacher_1 : "Belum Ditetapkan",
+                    teacher_2: dutyInfo ? dutyInfo.teacher_2 : "Belum Ditetapkan",
+                    teacher_1_email: dutyInfo ? dutyInfo.teacher_1_email : "",
+                    teacher_2_email: dutyInfo ? dutyInfo.teacher_2_email : "",
+                    creator_name: currentUser.name,
+                    creator_email: currentUser.email,
+                    created_at: new Date().toISOString().replace('T', ' ').substring(0, 19),
+                    reminder_set: formData.reminder_set,
+                    reminder_timing: formData.reminder_set ? formData.reminder_timing : "",
+                    reminder_status: formData.reminder_set ? "DIJADUALKAN" : "MENUNGGU"
+                };
+
+                onSave(newAnnouncement);
+            };
+
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4 flex justify-between items-center">
+                        <div>
+                            <h2 className="text-xl font-extrabold text-slate-900">TAMBAH PENGUMUMAN BAHARU</h2>
+                            <p className="text-xs font-semibold text-slate-500">
+                                Sila isi maklumat aktiviti sekali sahaja. Sistem akan menyusun semula maklumat secara automatik.
+                            </p>
+                        </div>
+                        <button onClick={onCancel} className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 font-bold text-xs rounded-lg">
+                            Batal
+                        </button>
+                    </div>
+
+                    {/* Auto Teacher Duty Display Banner */}
+                    <div className="p-4 rounded-xl bg-brand-50 border border-brand-200">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold text-brand-900 uppercase tracking-wider">
+                                🔍 AUTOKENAL PASTI GURU BERTUGAS SEMASA (LOGIK TARIKH)
+                            </span>
+                            {dutyInfo && (
+                                <span className="text-xs font-bold px-2 py-0.5 rounded bg-brand-600 text-white">
+                                    MINGGU {dutyInfo.week_number}
+                                </span>
+                            )}
+                        </div>
+                        {dutyInfo ? (
+                            <div className="mt-2 text-xs font-bold text-slate-800 grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div>• Guru 1: <span className="text-brand-700">{dutyInfo.teacher_1}</span> ({dutyInfo.teacher_1_email})</div>
+                                <div>• Guru 2: <span className="text-brand-700">{dutyInfo.teacher_2}</span> ({dutyInfo.teacher_2_email})</div>
+                            </div>
+                        ) : (
+                            <p className="mt-1 text-xs font-bold text-amber-700">
+                                ⚠️ Guru bertugas belum ditetapkan bagi tarikh aktiviti ini. (Admin boleh mengemas kini jadual).
+                            </p>
+                        )}
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Section 1: Basic Info */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-extrabold uppercase text-slate-500 tracking-wider border-b pb-1">
+                                1. MAKLUMAT UTAMA AKTIVITI
+                            </h3>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                    Tajuk Aktiviti / Pengumuman <span className="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    required
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                    placeholder="Contoh: Perhimpunan Rasmi Mingguan / Taklimat SPM"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium focus:ring-2 focus:ring-brand-500"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                        Kategori Pengumuman <span className="text-red-500">*</span>
+                                    </label>
+                                    <select 
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium bg-white"
+                                    >
+                                        <option value="Akademik">Akademik</option>
+                                        <option value="Kokurikulum">Kokurikulum</option>
+                                        <option value="Program Sekolah">Program Sekolah</option>
+                                        <option value="Murid">Murid</option>
+                                        <option value="Guru">Guru</option>
+                                        <option value="Asrama">Asrama</option>
+                                        <option value="Perhimpunan">Perhimpunan</option>
+                                        <option value="Peperiksaan">Peperiksaan</option>
+                                        <option value="Pergerakan Murid">Pergerakan Murid</option>
+                                        <option value="Makluman Penting">Makluman Penting</option>
+                                        <option value="Lain-lain">Lain-lain</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                        Tahap Kepentingan
+                                    </label>
+                                    <select 
+                                        value={formData.priority}
+                                        onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium bg-white"
+                                    >
+                                        <option value="BIASA">BIASA</option>
+                                        <option value="PENTING">PENTING</option>
+                                        <option value="SANGAT PENTING">SANGAT PENTING</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {formData.priority === "SANGAT PENTING" && (
+                                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-bold text-red-800">
+                                    🔴 PERHATIAN KHAS: Maklumat ini memerlukan perhatian segera daripada guru dan pihak yang berkaitan.
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                        Tarikh Aktiviti <span className="text-red-500">*</span>
+                                    </label>
+                                    <input 
+                                        type="date" 
+                                        required
+                                        value={formData.date}
+                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                        Masa Mula
+                                    </label>
+                                    <input 
+                                        type="time" 
+                                        value={formData.start_time}
+                                        onChange={(e) => setFormData({...formData, start_time: e.target.value})}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                        Masa Tamat
+                                    </label>
+                                    <input 
+                                        type="time" 
+                                        value={formData.end_time}
+                                        onChange={(e) => setFormData({...formData, end_time: e.target.value})}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                        Tempat / Lokasi Aktiviti
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.venue}
+                                        onChange={(e) => setFormData({...formData, venue: e.target.value})}
+                                        placeholder="Contoh: Dewan Chinta Mata"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                        Tempat Berkumpul
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        value={formData.assembly_point}
+                                        onChange={(e) => setFormData({...formData, assembly_point: e.target.value})}
+                                        placeholder="Contoh: Tapak Perhimpunan Sekolah"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                    Anjuran / Unit Bertanggungjawab
+                                </label>
+                                <input 
+                                    type="text" 
+                                    value={formData.organizer}
+                                    onChange={(e) => setFormData({...formData, organizer: e.target.value})}
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Section 2: Details & Instructions */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-extrabold uppercase text-slate-500 tracking-wider border-b pb-1">
+                                2. BUTIRAN & ARAHAN KHAS
+                            </h3>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                    Maklumat Penting
+                                </label>
+                                <textarea 
+                                    rows="2"
+                                    value={formData.important_info}
+                                    onChange={(e) => setFormData({...formData, important_info: e.target.value})}
+                                    placeholder="Ringkasan maklumat asas untuk perhatian guru..."
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                ></textarea>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                                    Arahan Tambahan
+                                </label>
+                                <textarea 
+                                    rows="2"
+                                    value={formData.instructions}
+                                    onChange={(e) => setFormData({...formData, instructions: e.target.value})}
+                                    placeholder="Arahan khas berpakaian, peralatan, atau tindakan khas..."
+                                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium"
+                                ></textarea>
+                            </div>
+                        </div>
+
+                        {/* Section 3: Smart Student Conditional Toggle */}
+                        {}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-extrabold uppercase text-slate-500 tracking-wider border-b pb-1">
+                                3. PENGLIBATAN MURID
+                            </h3>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-700 uppercase mb-2">
+                                    Adakah Murid Terlibat Secara Khusus?
+                                </label>
+                                <div className="flex space-x-4">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="has_students" 
+                                            value="TIDAK" 
+                                            checked={formData.has_students === "TIDAK"}
+                                            onChange={(e) => setFormData({...formData, has_students: e.target.value})}
+                                            className="text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span className="text-sm font-bold text-slate-700">TIDAK</span>
+                                    </label>
+
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input 
+                                            type="radio" 
+                                            name="has_students" 
+                                            value="YA" 
+                                            checked={formData.has_students === "YA"}
+                                            onChange={(e) => setFormData({...formData, has_students: e.target.value})}
+                                            className="text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span className="text-sm font-bold text-slate-700">YA</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {formData.has_students === "YA" && (
+                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
+                                    <h4 className="text-xs font-bold text-slate-700 uppercase">Tambah Senarai Murid Terlibat:</h4>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                                        <input 
+                                            type="text" 
+                                            placeholder="Nama Murid"
+                                            value={studentInput.name}
+                                            onChange={(e) => setStudentInput({...studentInput, name: e.target.value})}
+                                            className="px-3 py-2 border rounded-lg text-xs font-medium"
+                                        />
+                                        <input 
+                                            type="text" 
+                                            placeholder="Tingkatan / Kelas"
+                                            value={studentInput.className}
+                                            onChange={(e) => setStudentInput({...studentInput, className: e.target.value})}
+                                            className="px-3 py-2 border rounded-lg text-xs font-medium"
+                                        />
+                                        <input 
+                                            type="text" 
+                                            placeholder="Peranan (e.g., Pengerusi/Atlit)"
+                                            value={studentInput.role}
+                                            onChange={(e) => setStudentInput({...studentInput, role: e.target.value})}
+                                            className="px-3 py-2 border rounded-lg text-xs font-medium"
+                                        />
+                                        <input 
+                                            type="text" 
+                                            placeholder="Guru Pengiring"
+                                            value={studentInput.escort}
+                                            onChange={(e) => setStudentInput({...studentInput, escort: e.target.value})}
+                                            className="px-3 py-2 border rounded-lg text-xs font-medium"
+                                        />
+                                    </div>
+
+                                    <button 
+                                        type="button" 
+                                        onClick={handleAddStudent}
+                                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-lg"
+                                    >
+                                        + Tambah Murid Ke Senarai
+                                    </button>
+
+                                    {formData.students.length > 0 && (
+                                        <div className="overflow-x-auto border rounded-xl bg-white mt-2">
+                                            <table className="w-full text-xs text-left border-collapse">
+                                                <thead className="bg-slate-100 text-slate-700 font-bold border-b">
+                                                    <tr>
+                                                        <th className="p-2">Nama Murid</th>
+                                                        <th className="p-2">Kelas</th>
+                                                        <th className="p-2">Peranan</th>
+                                                        <th className="p-2">Guru Pengiring</th>
+                                                        <th className="p-2 text-right">Tindakan</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y font-medium">
+                                                    {formData.students.map((st, idx) => (
+                                                        <tr key={idx}>
+                                                            <td className="p-2 font-bold">{st.name}</td>
+                                                            <td className="p-2">{st.className}</td>
+                                                            <td className="p-2">{st.role || "-"}</td>
+                                                            <td className="p-2">{st.escort || "-"}</td>
+                                                            <td className="p-2 text-right">
+                                                                <button 
+                                                                    type="button" 
+                                                                    onClick={() => handleRemoveStudent(idx)} 
+                                                                    className="text-red-600 font-bold hover:underline"
+                                                                >
+                                                                    Padam
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Section 4: Document Attachment & Reminder Settings */}
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-extrabold uppercase text-slate-500 tracking-wider border-b pb-1">
+                                4. LAMPIRAN DOKUMEN & REMINDER
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50">
+                                    <label className="block text-xs font-bold text-slate-700 uppercase mb-2">
+                                        Muat Naik Dokumen Lampiran (PDF, DOCX, XLSX, PPTX)
+                                    </label>
+                                    <input 
+                                        type="file" 
+                                        onChange={handleFileSelect}
+                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.png"
+                                        className="text-xs text-slate-600 font-medium"
+                                    />
+                                    {uploadedFileName && (
+                                        <p className="mt-2 text-xs font-bold text-emerald-700">
+                                            📄 Fail dipilih: {uploadedFileName}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3">
+                                    <label className="flex items-center space-x-2 cursor-pointer">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={formData.reminder_set}
+                                            onChange={(e) => setFormData({...formData, reminder_set: e.target.checked})}
+                                            className="rounded text-brand-600 focus:ring-brand-500"
+                                        />
+                                        <span className="text-xs font-bold text-slate-800 uppercase">Tetapkan Peringatan Automatik</span>
+                                    </label>
+
+                                    {formData.reminder_set && (
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                                                Masa Peringatan
+                                            </label>
+                                            <select 
+                                                value={formData.reminder_timing}
+                                                onChange={(e) => setFormData({...formData, reminder_timing: e.target.value})}
+                                                className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs font-medium bg-white"
+                                            >
+                                                <option value="7 hari sebelum">7 hari sebelum</option>
+                                                <option value="3 hari sebelum">3 hari sebelum</option>
+                                                <option value="1 hari sebelum">1 hari sebelum</option>
+                                                <option value="Hari aktiviti">Hari aktiviti</option>
+                                                <option value="1 jam sebelum">1 jam sebelum</option>
+                                            </select>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Submit Buttons */}
+                        <div className="pt-4 border-t flex items-center justify-end space-x-3">
+                            <button 
+                                type="button" 
+                                onClick={onCancel}
+                                className="px-5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                            >
+                                BATAL
+                            </button>
+                            <button 
+                                type="submit"
+                                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold shadow-md"
+                            >
+                                SIMPAN & JANA PENGUMUMAN
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            );
+        }
+
+        function AnnouncementListView({ announcements, currentUser, setSelectedAnnouncement, setActiveModal, setActiveMenu, onDelete }) {
+            const [searchTerm, setSearchTerm] = React.useState("");
+            const [filterCategory, setFilterCategory] = React.useState("SEMUA");
+            const [filterPriority, setFilterPriority] = React.useState("SEMUA");
+
+            const filtered = announcements.filter(a => {
+                const matchSearch = a.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                    a.venue.toLowerCase().includes(searchTerm.toLowerCase());
+                const matchCategory = filterCategory === "SEMUA" || a.category === filterCategory;
+                const matchPriority = filterPriority === "SEMUA" || a.priority === filterPriority;
+                return matchSearch && matchCategory && matchPriority;
+            });
+
+            return (
+                <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div>
+                            <h2 className="text-xl font-extrabold text-slate-900">
+                                {currentUser.role === "SUPER ADMIN" ? "SEMUA PENGUMUMAN SEKOLAH" : "SENARAI PENGUMUMAN"}
+                            </h2>
+                            <p className="text-xs font-semibold text-slate-500">
+                                Rekod lengkap pengumuman dan aktiviti guru bertugas SMK Chinta Mata.
+                            </p>
+                        </div>
+                        <button 
+                            onClick={() => setActiveMenu("tambah_pengumuman")}
+                            className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md whitespace-nowrap"
+                        >
+                            + TAMBAH PENGUMUMAN
+                        </button>
+                    </div>
+
+                    {/* Search & Filter Filters Bar */}
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <input 
+                            type="text" 
+                            placeholder="🔍 Cari tajuk atau tempat..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium"
+                        />
+
+                        <select 
+                            value={filterCategory}
+                            onChange={(e) => setFilterCategory(e.target.value)}
+                            className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium bg-white"
+                        >
+                            <option value="SEMUA">Semua Kategori</option>
+                            <option value="Akademik">Akademik</option>
+                            <option value="Kokurikulum">Kokurikulum</option>
+                            <option value="Program Sekolah">Program Sekolah</option>
+                            <option value="Perhimpunan">Perhimpunan</option>
+                            <option value="Peperiksaan">Peperiksaan</option>
+                            <option value="Pergerakan Murid">Pergerakan Murid</option>
+                        </select>
+
+                        <select 
+                            value={filterPriority}
+                            onChange={(e) => setFilterPriority(e.target.value)}
+                            className="px-3 py-2 rounded-xl border border-slate-300 text-xs font-medium bg-white"
+                        >
+                            <option value="SEMUA">Semua Tahap</option>
+                            <option value="BIASA">BIASA</option>
+                            <option value="PENTING">PENTING</option>
+                            <option value="SANGAT PENTING">SANGAT PENTING</option>
+                        </select>
+                    </div>
+
+                    {/* Announcement Cards List */}
+                    {filtered.length === 0 ? (
+                        <div className="bg-white p-12 text-center rounded-2xl border border-slate-200">
+                            <span className="text-4xl">📢</span>
+                            <h3 className="text-base font-bold text-slate-800 mt-2">TIADA PENGUMUMAN DIJUMPAI</h3>
+                            <p className="text-xs font-semibold text-slate-500 mt-1">Sila padamkan carian atau tambah pengumuman baharu.</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse text-xs">
+                                    <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                                        <tr>
+                                            <th className="p-3">Tajuk & Kategori</th>
+                                            <th className="p-3">Tarikh & Masa</th>
+                                            <th className="p-3">Tempat</th>
+                                            <th className="p-3">Guru Bertugas</th>
+                                            <th className="p-3">Reminder</th>
+                                            <th className="p-3 text-right">Tindakan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 font-medium">
+                                        {filtered.map(ann => (
+                                            <tr key={ann.id} className="hover:bg-slate-50">
+                                                <td className="p-3 max-w-xs">
+                                                    <div className="font-bold text-slate-900 text-sm line-clamp-1">{ann.title}</div>
+                                                    <div className="flex space-x-1 mt-0.5">
+                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border">
+                                                            {ann.category}
+                                                        </span>
+                                                        {ann.priority === "SANGAT PENTING" && (
+                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">
+                                                                SANGAT PENTING
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 whitespace-nowrap">
+                                                    <div className="font-bold text-slate-800">{ann.date}</div>
+                                                    <div className="text-slate-500">{ann.start_time} - {ann.end_time}</div>
+                                                </td>
+                                                <td className="p-3 whitespace-nowrap font-medium text-slate-800">
+                                                    {ann.venue}
+                                                </td>
+                                                <td className="p-3 max-w-xs">
+                                                    <div className="font-bold text-slate-800 text-[11px] truncate">{ann.teacher_1}</div>
+                                                    <div className="text-slate-500 text-[10px] truncate">{ann.teacher_2}</div>
+                                                </td>
+                                                <td className="p-3 whitespace-nowrap">
+                                                    {ann.reminder_set ? (
+                                                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200">
+                                                            {ann.reminder_status || "DIJADUALKAN"}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px]">
+                                                            Tiada
+                                                        </span>
+                                                    )}
+                                                </td>
+                                                <td className="p-3 text-right whitespace-nowrap space-x-1">
+                                                    <button 
+                                                        onClick={() => { setSelectedAnnouncement(ann); setActiveModal("view"); }}
+                                                        className="px-2.5 py-1 bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold rounded text-xs border border-brand-200"
+                                                    >
+                                                        Lihat
+                                                    </button>
+
+                                                    <button 
+                                                        onClick={() => { setSelectedAnnouncement(ann); setActiveModal("script"); }}
+                                                        className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded text-xs border border-amber-200"
+                                                        title="Jana Skrip Pengumuman"
+                                                    >
+                                                        Skrip
+                                                    </button>
+
+                                                    <button 
+                                                        onClick={() => { setSelectedAnnouncement(ann); setActiveModal("whatsapp"); }}
+                                                        className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded text-xs border border-emerald-200"
+                                                        title="Jana Mesej WhatsApp"
+                                                    >
+                                                        WhatsApp
+                                                    </button>
+
+                                                    {currentUser.role === "SUPER ADMIN" && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                if (confirm("Adakah anda pasti untuk memadam pengumuman ini?")) {
+                                                                    onDelete(ann.id);
+                                                                }
+                                                            }}
+                                                            className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded text-xs border border-red-200"
+                                                        >
+                                                            Padam
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function CalendarView({ announcements, setSelectedAnnouncement, setActiveModal }) {
+            const [viewMode, setViewMode] = React.useState("bulanan"); // 'bulanan', 'mingguan', 'harian'
+
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-200 pb-4">
+                        <div>
+                            <h2 className="text-xl font-extrabold text-slate-900">KALENDAR AKTIVITI SEKOLAH</h2>
+                            <p className="text-xs font-semibold text-slate-500">
+                                Paparan interaktif pengumuman mengikut tarikh. Klik aktiviti untuk butiran penuh.
+                            </p>
+                        </div>
+
+                        <div className="flex bg-slate-100 p-1 rounded-xl">
+                            <button 
+                                onClick={() => setViewMode("bulanan")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold ${viewMode === "bulanan" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"}`}
+                            >
+                                Bulanan
+                            </button>
+                            <button 
+                                onClick={() => setViewMode("mingguan")}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold ${viewMode === "mingguan" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600"}`}
+                            >
+                                Mingguan
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* September / October 2026 Calendar Grid */}
+                    <div className="space-y-2">
+                        <div className="text-center font-bold text-slate-800 text-sm py-1 bg-brand-50 rounded-lg">
+                            SEPTEMBER - OKTOBER 2026
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-slate-500 border-b pb-2">
+                            <div>ISN</div>
+                            <div>SEL</div>
+                            <div>RAB</div>
+                            <div>KHA</div>
+                            <div>JUM</div>
+                            <div>SAB</div>
+                            <div>AHAD</div>
+                        </div>
+
+                        <div className="grid grid-cols-7 gap-2 text-xs">
+                            {/* Dummy Calendar Grid Days */}
+                            {[21,22,23,24,25,26,27,28,29,30,1,2,3,4,5,6,7,8,9,10,11].map((dayNum, i) => {
+                                const formattedDate = dayNum >= 21 ? `2026-09-${dayNum}` : `2026-10-0${dayNum}`;
+                                const dayAnnouncements = announcements.filter(a => a.date === formattedDate);
+                                const isToday = formattedDate === "2026-09-29";
+
+                                return (
+                                    <div key={i} className={`min-h-[90px] p-2 rounded-xl border text-left flex flex-col justify-between ${
+                                        isToday ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-400" : "border-slate-200 bg-white"
+                                    }`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`font-bold text-xs ${isToday ? "text-brand-700 bg-brand-200 px-1.5 rounded" : "text-slate-700"}`}>
+                                                {dayNum}
+                                            </span>
+                                            {isToday && <span className="text-[9px] font-extrabold text-brand-700">HARI INI</span>}
+                                        </div>
+
+                                        <div className="space-y-1 mt-1 flex-1">
+                                            {dayAnnouncements.map(ann => (
+                                                <button
+                                                    key={ann.id}
+                                                    onClick={() => { setSelectedAnnouncement(ann); setActiveModal("view"); }}
+                                                    className="w-full text-left p-1 rounded bg-brand-600 text-white font-bold text-[10px] truncate hover:bg-brand-700 block"
+                                                    title={ann.title}
+                                                >
+                                                    {ann.start_time} {ann.title}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function DutyScheduleView({ dutySchedule, teachers, currentUser, onUpdateSchedule }) {
+            const [editingItem, setEditingItem] = React.useState(null);
+            const [editForm, setEditForm] = React.useState({
+                start_date: "", end_date: "", teacher_1_name: "", teacher_2_name: ""
+            });
+
+            const handleStartEdit = (ds) => {
+                setEditingItem(ds);
+                setEditForm({
+                    start_date: ds.start_date,
+                    end_date: ds.end_date,
+                    teacher_1_name: ds.teacher_1_name,
+                    teacher_2_name: ds.teacher_2_name
+                });
+            };
+
+            const handleSaveEdit = () => {
+                if (!editForm.start_date || !editForm.end_date) {
+                    alert("Sila tetapkan tarikh mula dan tarikh akhir.");
+                    return;
+                }
+                if (editForm.start_date > editForm.end_date) {
+                    alert("Tarikh mula tidak boleh lebih lewat daripada tarikh akhir.");
+                    return;
+                }
+                if (editForm.teacher_1_name === editForm.teacher_2_name) {
+                    alert("Guru bertugas 1 dan Guru bertugas 2 tidak boleh merupakan guru yang sama.");
+                    return;
+                }
+
+                const updated = dutySchedule.map(ds => {
+                    if (ds.id === editingItem.id) {
+                        return {
+                            ...ds,
+                            start_date: editForm.start_date,
+                            end_date: editForm.end_date,
+                            teacher_1_name: editForm.teacher_1_name,
+                            teacher_2_name: editForm.teacher_2_name
+                        };
+                    }
+                    return ds;
+                });
+
+                onUpdateSchedule(updated);
+                setEditingItem(null);
+            };
+
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                        <div>
+                            <h2 className="text-xl font-extrabold text-slate-900">JADUAL GURU BERTUGAS MINGGUAN</h2>
+                            <p className="text-xs font-semibold text-slate-500">
+                                Kawalan logik tarikh bertugas (<span className="font-bold text-brand-700">start_date &lt;= activity_date &lt;= end_date</span>).
+                            </p>
+                        </div>
+                        {currentUser.role === "SUPER ADMIN" && (
+                            <span className="text-xs font-bold px-3 py-1 bg-amber-100 text-amber-900 rounded-full border border-amber-200">
+                                🔒 Kawalan Kemaskini Admin Utama
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th className="p-3">Minggu</th>
+                                    <th className="p-3">Kod</th>
+                                    <th className="p-3">Tarikh Mula</th>
+                                    <th className="p-3">Tarikh Akhir</th>
+                                    <th className="p-3">Guru Bertugas 1</th>
+                                    <th className="p-3">Guru Bertugas 2</th>
+                                    {currentUser.role === "SUPER ADMIN" && <th className="p-3 text-right">Tindakan</th>}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y font-medium">
+                                {dutySchedule.map(ds => {
+                                    const isEditing = editingItem && editingItem.id === ds.id;
+                                    return (
+                                        <tr key={ds.id} className="hover:bg-slate-50">
+                                            <td className="p-3 font-extrabold text-brand-700 whitespace-nowrap">
+                                                MINGGU {ds.week_number}
+                                            </td>
+                                            <td className="p-3 font-bold text-slate-800 whitespace-nowrap">{ds.code}</td>
+                                            
+                                            <td className="p-3 whitespace-nowrap">
+                                                {isEditing ? (
+                                                    <input 
+                                                        type="date" 
+                                                        value={editForm.start_date}
+                                                        onChange={(e) => setEditForm({...editForm, start_date: e.target.value})}
+                                                        className="px-2 py-1 border rounded text-xs font-medium"
+                                                    />
+                                                ) : (
+                                                    <span className="font-bold text-slate-800">{ds.start_date}</span>
+                                                )}
+                                            </td>
+
+                                            <td className="p-3 whitespace-nowrap">
+                                                {isEditing ? (
+                                                    <input 
+                                                        type="date" 
+                                                        value={editForm.end_date}
+                                                        onChange={(e) => setEditForm({...editForm, end_date: e.target.value})}
+                                                        className="px-2 py-1 border rounded text-xs font-medium"
+                                                    />
+                                                ) : (
+                                                    <span className="font-bold text-slate-800">{ds.end_date}</span>
+                                                )}
+                                            </td>
+
+                                            <td className="p-3">
+                                                {isEditing ? (
+                                                    <select 
+                                                        value={editForm.teacher_1_name}
+                                                        onChange={(e) => setEditForm({...editForm, teacher_1_name: e.target.value})}
+                                                        className="px-2 py-1 border rounded text-xs font-medium w-full"
+                                                    >
+                                                        {teachers.map(t => (
+                                                            <option key={t.id} value={t.name}>{t.name}</option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    <span className="font-bold text-slate-900">{ds.teacher_1_name}</span>
+                                                )}
+                                            </td>
+
+                                            <td className="p-3">
+                                                {isEditing ? (
+                                                    <select 
+                                                        value={editForm.teacher_2_name}
+                                                        onChange={(e) => setEditForm({...editForm, teacher_2_name: e.target.value})}
+                                                        className="px-2 py-1 border rounded text-xs font-medium w-full"
+                                                    >
+                                                        {teachers.map(t => (
+                                                            <option key={t.id} value={t.name}>{t.name}</option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    <span className="font-bold text-slate-900">{ds.teacher_2_name}</span>
+                                                )}
+                                            </td>
+
+                                            {currentUser.role === "SUPER ADMIN" && (
+                                                <td className="p-3 text-right whitespace-nowrap">
+                                                    {isEditing ? (
+                                                        <div className="space-x-1">
+                                                            <button onClick={handleSaveEdit} className="px-2.5 py-1 bg-emerald-600 text-white font-bold rounded text-xs">Simpan</button>
+                                                            <button onClick={() => setEditingItem(null)} className="px-2.5 py-1 bg-slate-200 text-slate-800 font-bold rounded text-xs">Batal</button>
+                                                        </div>
+                                                    ) : (
+                                                        <button onClick={() => handleStartEdit(ds)} className="px-3 py-1 bg-brand-50 text-brand-700 hover:bg-brand-100 font-bold rounded text-xs border border-brand-200">
+                                                            Edit
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            )}
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function TeacherDirectoryView({ teachers, currentUser, onUpdateTeachers }) {
+            const [search, setSearch] = React.useState("");
+
+            const filteredTeachers = teachers.filter(t => 
+                t.name.toLowerCase().includes(search.toLowerCase()) || 
+                t.official_email.toLowerCase().includes(search.toLowerCase())
+            );
+
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-slate-200 pb-4">
+                        <div>
+                            <h2 className="text-xl font-extrabold text-slate-900">DIREKTORI GURU SMK CHINTA MATA</h2>
+                            <p className="text-xs font-semibold text-slate-500">
+                                Senarai rasmi e-mel DELIMa guru untuk pengesanan automatik sistem.
+                            </p>
+                        </div>
+                        <input 
+                            type="text" 
+                            placeholder="🔍 Cari nama guru atau e-mel..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="px-3 py-2 border rounded-xl text-xs font-medium w-full sm:w-64"
+                        />
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th className="p-3">Bil</th>
+                                    <th className="p-3">Nama Guru</th>
+                                    <th className="p-3">E-mel Rasmi DELIMa</th>
+                                    <th className="p-3">Kod</th>
+                                    <th className="p-3">Peranan</th>
+                                    <th className="p-3 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y font-medium">
+                                {filteredTeachers.map((t, idx) => (
+                                    <tr key={t.id} className="hover:bg-slate-50">
+                                        <td className="p-3 text-slate-400 font-bold">{idx + 1}</td>
+                                        <td className="p-3 font-bold text-slate-900">{t.name}</td>
+                                        <td className="p-3 font-bold text-brand-700">{t.official_email}</td>
+                                        <td className="p-3 font-semibold text-slate-600">{t.teacher_code}</td>
+                                        <td className="p-3">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                                t.role === "SUPER ADMIN" ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-slate-100 text-slate-700"
+                                            }`}>
+                                                {t.role}
+                                            </span>
+                                        </td>
+                                        <td className="p-3 text-right">
+                                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[10px]">
+                                                {t.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function StudentsView({ announcements }) {
+            const studentAnnouncements = announcements.filter(a => a.has_students && a.students.length > 0);
+
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">PENGURUSAN MURID TERLIBAT</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Senarai murid yang didaftarkan untuk aktiviti atau tugas pengumuman sekolah.
+                        </p>
+                    </div>
+
+                    {studentAnnouncements.length === 0 ? (
+                        <div className="p-8 text-center bg-slate-50 rounded-xl">
+                            <p className="text-sm font-bold text-slate-500">TIADA MURID TERLIBAT</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {studentAnnouncements.map(ann => (
+                                <div key={ann.id} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3">
+                                    <div className="flex justify-between items-center border-b pb-2">
+                                        <div>
+                                            <h3 className="font-bold text-slate-900 text-sm">{ann.title}</h3>
+                                            <p className="text-xs font-semibold text-slate-500">📅 {ann.date} &bull; 📍 {ann.venue}</p>
+                                        </div>
+                                        <span className="px-2.5 py-1 bg-brand-100 text-brand-800 text-xs font-bold rounded-lg">
+                                            {ann.students.length} Murid
+                                        </span>
+                                    </div>
+
+                                    <div className="overflow-x-auto bg-white rounded-lg border">
+                                        <table className="w-full text-xs text-left">
+                                            <thead className="bg-slate-100 font-bold text-slate-700 border-b">
+                                                <tr>
+                                                    <th className="p-2">Nama Murid</th>
+                                                    <th className="p-2">Kelas</th>
+                                                    <th className="p-2">Peranan</th>
+                                                    <th className="p-2">Guru Pengiring</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y font-medium">
+                                                {ann.students.map((st, i) => (
+                                                    <tr key={i}>
+                                                        <td className="p-2 font-bold text-slate-900">{st.name}</td>
+                                                        <td className="p-2">{st.className}</td>
+                                                        <td className="p-2">{st.role || "-"}</td>
+                                                        <td className="p-2">{st.escort || "-"}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function RemindersView({ announcements, onUpdateAnnouncement }) {
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">PENGURUSAN REMINDER & PERINGATAN</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Jadualkan dan pantau peringatan notifikasi automatik untuk guru bertugas.
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th className="p-3">Aktiviti / Pengumuman</th>
+                                    <th className="p-3">Tarikh Aktiviti</th>
+                                    <th className="p-3">Penerima Peringatan</th>
+                                    <th className="p-3">Tetapan Masa</th>
+                                    <th className="p-3">Status Notification</th>
+                                    <th className="p-3 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y font-medium">
+                                {announcements.map(ann => (
+                                    <tr key={ann.id} className="hover:bg-slate-50">
+                                        <td className="p-3 font-bold text-slate-900 max-w-xs truncate">{ann.title}</td>
+                                        <td className="p-3 whitespace-nowrap font-bold text-slate-800">{ann.date}</td>
+                                        <td className="p-3 text-xs">
+                                            <div className="font-bold text-brand-700">{ann.teacher_1}</div>
+                                            <div className="text-slate-500">{ann.teacher_2}</div>
+                                        </td>
+                                        <td className="p-3 whitespace-nowrap font-semibold">
+                                            {ann.reminder_set ? ann.reminder_timing : "Belum Ditetapkan"}
+                                        </td>
+                                        <td className="p-3 whitespace-nowrap">
+                                            {ann.reminder_set ? (
+                                                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200">
+                                                    {ann.reminder_status || "BERJAYA"}
+                                                </span>
+                                            ) : (
+                                                <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[10px] border border-amber-200">
+                                                    MENUNGGU
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="p-3 text-right whitespace-nowrap">
+                                            <button 
+                                                onClick={() => {
+                                                    const updated = {
+                                                        ...ann,
+                                                        reminder_set: true,
+                                                        reminder_timing: "1 hari sebelum",
+                                                        reminder_status: "DIJADUALKAN"
+                                                    };
+                                                    onUpdateAnnouncement(updated);
+                                                }}
+                                                className="px-3 py-1 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded text-xs shadow-sm"
+                                            >
+                                                {ann.reminder_set ? "Kemaskini" : "Tetapkan Reminder"}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function ScriptGeneratorView({ announcements, showToast }) {
+            const [selectedId, setSelectedId] = React.useState(announcements[0]?.id || "");
+            const selectedAnn = announcements.find(a => a.id === selectedId) || announcements[0];
+
+            const handleCopy = (text) => {
+                const el = document.createElement('textarea');
+                el.value = text;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                showToast("Skrip pengumuman berjaya disalin!");
+            };
+
+            const scriptText = selectedAnn ? `
+==================================================
+SKRIP PENGUMUMAN RASMI GURU BERTUGAS
+SMK CHINTA MATA
+==================================================
+
+"Selamat pagi dan salam sejahtera kepada Pengetua, Barisan Pentadbir, Rakan-rakan Guru, dan semua murid SMK Chinta Mata.
+
+Dimaklumkan bahawa aktiviti berkenaan ${selectedAnn.title.toUpperCase()} akan dijalankan seperti ketetapan berikut:
+
+📌 Aktiviti: ${selectedAnn.title}
+📅 Tarikh: ${selectedAnn.date}
+⏰ Masa: ${selectedAnn.start_time} hingga ${selectedAnn.end_time}
+📍 Tempat: ${selectedAnn.venue}
+🏛 Tempat Berkumpul: ${selectedAnn.assembly_point || selectedAnn.venue}
+🏢 Anjuran: ${selectedAnn.organizer}
+
+ℹ️ Maklumat Penting:
+${selectedAnn.important_info || "Tiada maklumat tambahan."}
+
+📋 Arahan Kepada Murid & Guru:
+${selectedAnn.instructions || "Semua pihak dipohon mengambil perhatian dan memberi kerjasama penuh."}
+
+${selectedAnn.has_students ? `👥 Perhatian Murid Terlibat:\n${selectedAnn.students.map(s => `- ${s.name} (${s.className}): ${s.role}`).join('\n')}` : ''}
+
+Disediakan oleh Guru Bertugas Semasa:
+1. ${selectedAnn.teacher_1}
+2. ${selectedAnn.teacher_2}
+
+Sekian, terima kasih."
+==================================================
+            `.trim() : "Tiada aktiviti dipilih.";
+
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">PENJANA SKRIP GURU BERTUGAS</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Menghasilkan skrip bacaan formal automatik untuk perhimpunan dan pengumuman sekolah.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Pengumuman:</label>
+                        <select 
+                            value={selectedId}
+                            onChange={(e) => setSelectedId(e.target.value)}
+                            className="w-full sm:w-1/2 px-4 py-2.5 border rounded-xl text-xs font-bold bg-white"
+                        >
+                            {announcements.map(a => (
+                                <option key={a.id} value={a.id}>{a.date} - {a.title}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {selectedAnn && (
+                        <div id="printable-area" className="p-6 bg-slate-50 rounded-2xl border border-slate-300 space-y-4">
+                            <pre className="whitespace-pre-wrap font-sans text-xs sm:text-sm text-slate-800 leading-relaxed font-semibold">
+                                {scriptText}
+                            </pre>
+
+                            <div className="flex space-x-3 pt-4 border-t border-slate-200">
+                                <button 
+                                    onClick={() => handleCopy(scriptText)}
+                                    className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-sm"
+                                >
+                                    📋 SALIN SKRIP
+                                </button>
+                                <button 
+                                    onClick={() => window.print()}
+                                    className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-sm"
+                                >
+                                    🖨 CETAK SKRIP
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function WhatsAppGeneratorView({ announcements, showToast }) {
+            const [selectedId, setSelectedId] = React.useState(announcements[0]?.id || "");
+            const selectedAnn = announcements.find(a => a.id === selectedId) || announcements[0];
+
+            const handleCopy = (text) => {
+                const el = document.createElement('textarea');
+                el.value = text;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                showToast("Mesej WhatsApp telah disalin ke papan klip!");
+            };
+
+            const waText = selectedAnn ? `
+PERINGATAN MESRA
+SMK CHINTA MATA
+
+Salam sejahtera.
+Dimaklumkan bahawa:
+
+Aktiviti: *${selectedAnn.title}*
+Kategori: ${selectedAnn.category}
+Tarikh: *${selectedAnn.date}*
+Masa: *${selectedAnn.start_time} - ${selectedAnn.end_time}*
+Tempat: *${selectedAnn.venue}*
+Anjuran: ${selectedAnn.organizer}
+
+*Guru Bertugas:*
+1. ${selectedAnn.teacher_1}
+2. ${selectedAnn.teacher_2}
+
+*Maklumat Penting:*
+${selectedAnn.important_info || "Tiada."}
+
+*Arahan:*
+${selectedAnn.instructions || "Mohon kerjasama guru-guru berkenaan."}
+
+Mohon perhatian dan kerjasama guru yang berkaitan.
+Terima kasih.
+            `.trim() : "";
+
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">PENJANA MESEJ WHATSAPP</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Hasilkan format mesej WhatsApp rasmi sedia untuk disalin dan disebarkan ke kumpulan mesej guru.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Pengumuman:</label>
+                        <select 
+                            value={selectedId}
+                            onChange={(e) => setSelectedId(e.target.value)}
+                            className="w-full sm:w-1/2 px-4 py-2.5 border rounded-xl text-xs font-bold bg-white"
+                        >
+                            {announcements.map(a => (
+                                <option key={a.id} value={a.id}>{a.date} - {a.title}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {selectedAnn && (
+                        <div className="p-6 bg-emerald-50/40 rounded-2xl border border-emerald-200 space-y-4">
+                            <div className="p-4 bg-white rounded-xl border border-emerald-100 shadow-sm text-xs font-semibold text-slate-800 whitespace-pre-wrap leading-relaxed">
+                                {waText}
+                            </div>
+
+                            <button 
+                                onClick={() => handleCopy(waText)}
+                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center space-x-2"
+                            >
+                                <span>📲</span>
+                                <span>SALIN MESEJ WHATSAPP</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function HistoryView({ announcements, currentUser, setSelectedAnnouncement, setActiveModal }) {
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">SEJARAH & REKOD PENGUMUMAN</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Log sejarah pembentukan pengumuman sekolah SMK Chinta Mata.
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th className="p-3">ID Rekod</th>
+                                    <th className="p-3">Tajuk Aktiviti</th>
+                                    <th className="p-3">Tarikh Dicipta</th>
+                                    <th className="p-3">Pengisi / Pencipta</th>
+                                    <th className="p-3 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y font-medium">
+                                {announcements.map(ann => (
+                                    <tr key={ann.id} className="hover:bg-slate-50">
+                                        <td className="p-3 font-bold text-slate-400">{ann.id}</td>
+                                        <td className="p-3 font-bold text-slate-900">{ann.title}</td>
+                                        <td className="p-3 font-semibold text-slate-600">{ann.created_at}</td>
+                                        <td className="p-3 font-bold text-brand-700">{ann.creator_name}</td>
+                                        <td className="p-3 text-right">
+                                            <button 
+                                                onClick={() => { setSelectedAnnouncement(ann); setActiveModal("view"); }}
+                                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded text-xs"
+                                            >
+                                                Butiran
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function StatisticsView({ announcements, teachers, dutySchedule }) {
+            return (
+                <div className="space-y-6">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <h2 className="text-xl font-extrabold text-slate-900">ANALISIS & STATISTIK SISTEM</h2>
+                        <p className="text-xs font-semibold text-slate-500 mt-1">
+                            Ringkasan penggunaan pengumuman guru bertugas SMK Chinta Mata.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p className="text-xs font-bold text-slate-500 uppercase">Jumlah Guru Berdaftar</p>
+                            <p className="text-3xl font-extrabold text-brand-700 mt-2">{teachers.length}</p>
+                            <p className="text-xs font-semibold text-slate-400 mt-1">100% Menggunakan E-mel DELIMa</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p className="text-xs font-bold text-slate-500 uppercase">Jadual Bertugas Terancang</p>
+                            <p className="text-3xl font-extrabold text-amber-600 mt-2">{dutySchedule.length} Minggu</p>
+                            <p className="text-xs font-semibold text-slate-400 mt-1">Minggu 38 hingga Minggu 47</p>
+                        </div>
+
+                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                            <p className="text-xs font-bold text-slate-500 uppercase">Kadar Peringatan Berjaya</p>
+                            <p className="text-3xl font-extrabold text-emerald-600 mt-2">100%</p>
+                            <p className="text-xs font-semibold text-slate-400 mt-1">Tiada Notifikasi Gagal</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function UserManagementView({ teachers, setTeachers, showToast }) {
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">KAWALAN HAK AKSES PENGGUNA</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Pengurusan kebenaran peranan Guru & Super Admin oleh Shawn Christien Fabian.
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th className="p-3">Nama Pengguna</th>
+                                    <th className="p-3">E-mel DELIMa</th>
+                                    <th className="p-3">Peranan Semasa</th>
+                                    <th className="p-3 text-right">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y font-medium">
+                                {teachers.map(t => (
+                                    <tr key={t.id} className="hover:bg-slate-50">
+                                        <td className="p-3 font-bold text-slate-900">{t.name}</td>
+                                        <td className="p-3 font-bold text-brand-700">{t.official_email}</td>
+                                        <td className="p-3 font-bold">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] ${t.role === "SUPER ADMIN" ? "bg-amber-100 text-amber-900 font-bold" : "bg-slate-100 text-slate-700"}`}>
+                                                {t.role}
+                                            </span>
+                                        </td>
+                                        <td className="p-3 text-right">
+                                            {t.official_email !== "g-11580178@moe-dl.edu.my" && (
+                                                <button 
+                                                    onClick={() => {
+                                                        const newRole = t.role === "SUPER ADMIN" ? "GURU" : "SUPER ADMIN";
+                                                        const updated = teachers.map(item => item.id === t.id ? {...item, role: newRole} : item);
+                                                        setTeachers(updated);
+                                                        showToast(`Peranan ${t.name} ditukar kepada ${newRole}`);
+                                                    }}
+                                                    className="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 font-bold text-xs rounded"
+                                                >
+                                                    Tukar Peranan
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function AuditLogView({ auditLogs }) {
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">AUDIT LOG SISTEM</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Rekod audit keselamatan dan Jejak Audit Pengguna.
+                        </p>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-200">
+                        <table className="w-full text-left border-collapse text-xs">
+                            <thead className="bg-slate-100 text-slate-700 font-bold border-b">
+                                <tr>
+                                    <th className="p-3">Pengguna</th>
+                                    <th className="p-3">Peranan</th>
+                                    <th className="p-3">Tindakan Log</th>
+                                    <th className="p-3">Tarikh</th>
+                                    <th className="p-3 text-right">Masa</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y font-medium">
+                                {auditLogs.map(log => (
+                                    <tr key={log.id} className="hover:bg-slate-50">
+                                        <td className="p-3 font-bold text-slate-900">{log.user}</td>
+                                        <td className="p-3"><span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold">{log.role}</span></td>
+                                        <td className="p-3 font-semibold text-slate-800">{log.action}</td>
+                                        <td className="p-3 text-slate-600">{log.date}</td>
+                                        <td className="p-3 text-right text-slate-600">{log.time}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function SettingsView({ currentUser, showToast }) {
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                    <div className="border-b border-slate-200 pb-4">
+                        <h2 className="text-xl font-extrabold text-slate-900">TETAPAN SISTEM</h2>
+                        <p className="text-xs font-semibold text-slate-500">
+                            Konfigurasi tetapan asas web app pengumuman sekolah.
+                        </p>
+                    </div>
+
+                    <div className="space-y-4 text-xs font-semibold text-slate-800">
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                            <div className="font-bold text-sm text-slate-900">Maklumat Sekolah</div>
+                            <div>• Nama Sekolah: SMK CHINTA MATA</div>
+                            <div>• Tagline: "Maklumat Tepat Pengumuman Teratur Tiada Yang Tercicir"</div>
+                            <div>• Super Admin Utama: SHAWN CHRISTIEN FABIAN (g-11580178@moe-dl.edu.my)</div>
+                        </div>
+
+                        <button onClick={() => showToast("Tetapan berjaya disimpan.")} className="px-4 py-2 bg-brand-600 text-white font-bold rounded-xl shadow-sm">
+                            Simpan Tetapan
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function ProfileView({ currentUser }) {
+            return (
+                <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                    <h2 className="text-xl font-extrabold text-slate-900">PROFIL GURU</h2>
+                    <div className="p-4 bg-slate-50 rounded-xl space-y-2 text-xs font-bold text-slate-800">
+                        <div>Nama: <span className="text-brand-700">{currentUser.name}</span></div>
+                        <div>E-mel DELIMa: <span className="text-brand-700">{currentUser.email}</span></div>
+                        <div>Peranan: <span className="text-amber-700">{currentUser.role}</span></div>
+                    </div>
+                </div>
+            );
+        }
+
+        function AnnouncementDetailModal({ announcement, onClose, onOpenScript, onOpenWhatsApp }) {
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5">
+                        <div className="flex justify-between items-start border-b pb-3">
+                            <div>
+                                <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-700 border">
+                                    {announcement.category}
+                                </span>
+                                <h3 className="text-lg font-extrabold text-slate-900 mt-1">{announcement.title}</h3>
+                            </div>
+                            <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-700 font-bold text-lg">&times;</button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 text-xs font-semibold bg-slate-50 p-4 rounded-xl border">
+                            <div>📅 Tarikh: <span className="font-bold text-slate-900">{announcement.date}</span></div>
+                            <div>⏰ Masa: <span className="font-bold text-slate-900">{announcement.start_time} - {announcement.end_time}</span></div>
+                            <div>📍 Tempat: <span className="font-bold text-slate-900">{announcement.venue}</span></div>
+                            <div>🏛 Berkumpul: <span className="font-bold text-slate-900">{announcement.assembly_point || "-"}</span></div>
+                        </div>
+
+                        <div className="space-y-2 text-xs font-semibold">
+                            <div className="font-bold text-slate-900 uppercase">Guru Bertugas Semasa:</div>
+                            <div className="p-3 bg-brand-50 rounded-xl border border-brand-200 text-slate-800 space-y-1">
+                                <div>1. {announcement.teacher_1} ({announcement.teacher_1_email})</div>
+                                <div>2. {announcement.teacher_2} ({announcement.teacher_2_email})</div>
+                            </div>
+                        </div>
+
+                        {announcement.important_info && (
+                            <div className="space-y-1 text-xs">
+                                <div className="font-bold text-slate-900 uppercase">Maklumat Penting:</div>
+                                <p className="p-3 bg-slate-50 rounded-xl border text-slate-700 font-medium">{announcement.important_info}</p>
+                            </div>
+                        )}
+
+                        <div className="flex space-x-2 pt-2 border-t">
+                            <button onClick={onOpenScript} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-sm">
+                                Jana Skrip
+                            </button>
+                            <button onClick={onOpenWhatsApp} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm">
+                                WhatsApp
+                            </button>
+                            <button onClick={onClose} className="ml-auto px-4 py-2 bg-slate-200 hover:bg-slate-300 font-bold text-xs rounded-xl">
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function ScriptModal({ announcement, onClose, showToast }) {
+            const script = `
+SKRIP PENGUMUMAN RASMI:
+Aktiviti: ${announcement.title}
+Tarikh: ${announcement.date} (${announcement.start_time} - ${announcement.end_time})
+Tempat: ${announcement.venue}
+Guru Bertugas: ${announcement.teacher_1} & ${announcement.teacher_2}
+
+Maklumat:
+${announcement.important_info || "Tiada."}
+            `.trim();
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-lg w-full space-y-4">
+                        <h3 className="font-extrabold text-slate-900 text-base">SKRIP GURU BERTUGAS</h3>
+                        <textarea rows="8" readOnly value={script} className="w-full p-3 border rounded-xl text-xs font-semibold text-slate-800 bg-slate-50"></textarea>
+                        <div className="flex justify-end space-x-2">
+                            <button onClick={() => {
+                                const el = document.createElement('textarea');
+                                el.value = script;
+                                document.body.appendChild(el);
+                                el.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(el);
+                                showToast("Skrip telah disalin!");
+                            }} className="px-4 py-2 bg-brand-600 text-white font-bold text-xs rounded-xl">
+                                Salin Skrip
+                            </button>
+                            <button onClick={onClose} className="px-4 py-2 bg-slate-200 font-bold text-xs rounded-xl">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function WhatsAppModal({ announcement, onClose, showToast }) {
+            const wa = `
+PERINGATAN MESRA SMK CHINTA MATA
+Aktiviti: ${announcement.title}
+Tarikh: ${announcement.date}
+Masa: ${announcement.start_time} - ${announcement.end_time}
+Tempat: ${announcement.venue}
+Guru Bertugas: ${announcement.teacher_1} & ${announcement.teacher_2}
+            `.trim();
+
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl p-6 shadow-2xl max-w-lg w-full space-y-4">
+                        <h3 className="font-extrabold text-slate-900 text-base">MESEJ WHATSAPP</h3>
+                        <textarea rows="6" readOnly value={wa} className="w-full p-3 border rounded-xl text-xs font-semibold text-slate-800 bg-emerald-50/50"></textarea>
+                        <div className="flex justify-end space-x-2">
+                            <button onClick={() => {
+                                const el = document.createElement('textarea');
+                                el.value = wa;
+                                document.body.appendChild(el);
+                                el.select();
+                                document.execCommand('copy');
+                                document.body.removeChild(el);
+                                showToast("Mesej WhatsApp telah disalin!");
+                            }} className="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl">
+                                Salin WhatsApp
+                            </button>
+                            <button onClick={onClose} className="px-4 py-2 bg-slate-200 font-bold text-xs rounded-xl">Tutup</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
